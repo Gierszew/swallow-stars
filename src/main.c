@@ -1,4 +1,5 @@
 #include <math.h>
+#include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,6 +12,7 @@
 #define SPEED_UP 'o'
 #define SPEED_DOWN 'p'
 #define QUIT 'q'
+#define MAX_HUNTERS 50
 
 struct Game {
     WINDOW* mainWindow;
@@ -18,6 +20,8 @@ struct Game {
     int cols;
     int rows;
     bool running;
+
+    clock_t lastHunterSpawn;
 };
 
 struct Player {
@@ -45,12 +49,18 @@ struct Hunter {
     int height;
     int bounces;
     bool dirCalculated;
+    bool alive;
 };
+
+int randInt(int min, int max) {
+    return min + rand() % (max - min + 1);
+}
 
 void init(struct Game* game) {
     game->logFile = fopen("debug.log", "w");
     game->mainWindow = initscr();
     game->running = true;
+    game->lastHunterSpawn = clock();
     if (game->mainWindow == NULL) {
         fprintf(stderr, "Error initialising ncurses.\n");
 	    exit(EXIT_FAILURE);
@@ -63,11 +73,34 @@ void init(struct Game* game) {
     curs_set(0);
 }
 
+bool shouldSpawnHunter(struct Game* game, int seconds) {
+    time_t now = time(NULL);
+    float elapsed = difftime(now, game->lastHunterSpawn);
+
+    if (elapsed >= seconds) {
+        game->lastHunterSpawn = now;
+        return true;
+
+    }
+    return false;
+}
+
+
 void drawHunter(struct Hunter* hunter) {
     mvwaddstr(hunter->body, 0, 0, "**");
     mvwaddstr(hunter->body, 1, 0, "**");
 
     wrefresh(hunter->body);
+}
+
+void drawHunters(struct Hunter hunters[], int hunterCount) {
+    for (int i = 0; i < hunterCount; i++) {
+        struct Hunter* h = &hunters[i];
+        if (!h->alive) continue;
+
+        mvwin(h->body, h->y, h->x);
+        drawHunter(h);
+    }
 }
 
 void calcDirectionToPlayer(struct Hunter* hunter, struct Player* player) {
@@ -85,16 +118,59 @@ void calcDirectionToPlayer(struct Hunter* hunter, struct Player* player) {
 void initHunter(struct Game* game, struct Hunter* hunter) {
     hunter->width = 2;
     hunter->height = 2;
-    hunter->x = 4;
+    hunter->x = randInt(0, game->cols - 4);
     hunter->y = 4;
     hunter->speed = 0.57f;
+    hunter->bounces = 4;
+    hunter->alive = true;
     hunter->body = subwin(game->mainWindow, hunter->height, hunter->width, hunter->y, hunter->x);
 
     drawHunter(hunter);
 }
 
 void killHunter(struct Hunter* hunter) {
-    delwin(hunter->body);
+    if (hunter->body) {
+        delwin(hunter->body);
+        hunter->body = NULL;
+    }
+    hunter->alive = false;
+}
+
+void bounceHunter(struct Hunter* hunter, struct Game* game) {
+    
+    if (hunter->bounces > 0) {
+
+        // left wall
+        if (hunter->x <= 1) {
+            hunter->x = 1;
+            hunter->dx = -hunter->dx;
+            hunter->bounces--;
+        }
+
+        // right wall
+        if (hunter->x >= game->cols - hunter->width - 1) {
+            hunter->x = game->cols - hunter->width - 1;
+            hunter->dx = -hunter->dx;
+            hunter->bounces--;
+        }
+
+        // top wall
+        if (hunter->y <= 1) {
+            hunter->y = 1;
+            hunter->dy = -hunter->dy;
+            hunter->bounces--;
+        }
+
+        // bot wall
+        if (hunter->y >= game->rows - hunter->height - 1) {
+            hunter->y = game->rows - hunter->height - 1;
+            hunter->dy = -hunter->dy;
+            hunter->bounces--;
+        }
+        
+    } else {
+        killHunter(hunter);
+    }
 }
 
 void drawPlayer(struct Player* player) {
@@ -117,26 +193,53 @@ void initPlayer(struct Game* game, struct Player* player) {
     drawPlayer(player);    
 }
 
+void hunterState(struct Hunter hunters[], struct Player* player, struct Game* game, int hunterCount) {
+    for (int i = 0; i < hunterCount; i++) {
+        struct Hunter* h = &hunters[i];
+        if (!h->alive) continue;
+        if (!h->dirCalculated)
+            calcDirectionToPlayer(h, player);
+        h->x += h->dx * h->speed;
+        h->y += h->dy * h->speed;
+
+        bounceHunter(h, game);
+
+        if (!h->alive) continue;
+    }
+}
+
 int main() {
+    srand(time(NULL));
     struct Game game;
     struct Player player;
-    struct Hunter hunter;
-    struct Hunter* hunters;
+    struct Hunter hunters[MAX_HUNTERS];
+    for (int i = 0; i < MAX_HUNTERS; ++i) {
+        hunters[i].alive = false;
+        hunters[i].body = NULL;
+        hunters[i].dirCalculated = false;
+        hunters[i].dx = hunters[i].dy = 0.0f;
+    }
+    int hunterCount = 0;
     char ch;
     init(&game);
     initPlayer(&game, &player);
-    initHunter(&game, &hunter);
     while (game.running) {
         ch = getch();
         if (player.score <= 0)
             game.running = false;
         getmaxyx(game.mainWindow, game.rows, game.cols);
-        if (!hunter.dirCalculated)
-            calcDirectionToPlayer(&hunter, &player);
+        if (shouldSpawnHunter(&game, 1.0f)) {
+            if (hunterCount < MAX_HUNTERS) {
+                initHunter(&game, &hunters[hunterCount]);
+                hunterCount++;
+            }
+            fprintf(game.logFile, "Hello world");
+        }
+        drawHunters(hunters, hunterCount);
         werase(player.body);
-        werase(hunter.body);
-        fprintf(game.logFile, "Hunter pos: dx=%f dy=%f x=%f y=%f\n", hunter.dx, hunter.dy, hunter.x, hunter.y);
-        fprintf(game.logFile, "Player pos: x=%f y=%f\n", player.x, player.y);
+        for (int i = 0; i < hunterCount; i++) {
+            werase(hunters[i].body);
+        }
         fflush(game.logFile);
         switch(ch) {
             case UP:
@@ -155,21 +258,15 @@ int main() {
                 game.running = false;
                 break;
         }
-        hunter.x += hunter.dx * hunter.speed;
-        hunter.y += hunter.dy * hunter.speed;
-
-        if (hunter.x < 1) hunter.x = 1;
-        if (hunter.y < 1) hunter.y = 1;
-        if (hunter.x > game.cols - hunter.width - 1) hunter.x = game.cols - hunter.width - 1;
-        if (hunter.y > game.rows - hunter.height - 1) hunter.y = game.rows - hunter.height - 1;
+        
+        hunterState(hunters, &player, &game, hunterCount);
         
         usleep(16666);
         werase(game.mainWindow);
         box(game.mainWindow, 0, 0);
         wrefresh(game.mainWindow);
         mvwin(player.body, player.y, player.x);
-        mvwin(hunter.body, hunter.y, hunter.x);
-        drawHunter(&hunter);
+        
         drawPlayer(&player);
     }
     fclose(game.logFile);
