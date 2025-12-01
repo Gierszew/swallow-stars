@@ -6,16 +6,21 @@
 #include <stdbool.h>
 #include <time.h>
 
+struct Player;
+
 struct Game {
     WINDOW* mainWindow;
+    WINDOW* hudWindow;
     FILE* logFile;
     int cols;
     int rows;
+    int hudHeight;
     bool running;
     time_t lastHunterSpawn;
 };
 
 void init(struct Game* game);
+void updateHud(struct Game* game, struct Player* player);
 bool shouldSpawnHunter(struct Game* game, int seconds);
 
 #endif

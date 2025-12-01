@@ -2,6 +2,7 @@
 #include "math.h"
 #include "utils.h"
 #include <curses.h>
+
 void hunterState(struct Hunter hunters[], struct Player* player, struct Game* game, int hunterCount) {
     for (int i = 0; i < hunterCount; i++) {
         struct Hunter* h = &hunters[i];
@@ -97,8 +98,8 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
         }
 
         // bot wall
-        if (hunter->y >= game->rows - hunter->height - 1) {
-            hunter->y = game->rows - hunter->height - 1;
+        if (hunter->y >= game->rows - game->hudHeight - hunter->height - 1) {
+            hunter->y = game->rows - game->hudHeight - hunter->height - 1;
             hunter->dy = -hunter->dy;
             hunter->bounces--;
         }

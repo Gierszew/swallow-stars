@@ -1,6 +1,7 @@
 #include "star.h"
 #include "utils.h"
 #include "math.h"
+#include <curses.h>
 
 void drawStar(struct Star* star) {
     mvwaddstr(star->body, 0, 0, "*");

@@ -2,6 +2,7 @@
 #define STAR_H
 
 #include "game.h"
+#include "player.h"
 
 struct Star {
     WINDOW* body;

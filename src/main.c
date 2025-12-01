@@ -2,7 +2,6 @@
 #include "player.h"
 #include "hunter.h"
 #include "utils.h"
-#include "star.h"
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -49,24 +48,42 @@ int main() {
             werase(hunters[i].body);
         }
         fflush(game.logFile);
-        switch(ch) {
-            case UP:
-                if (player.y > 1) player.y -= 1 * player.speed;
-                break;
-            case DOWN:
-                if (player.y < (game.rows - player.height - 1)) player.y += 1 * player.speed;
-                break;
-            case LEFT:
-                if (player.x > 1) player.x -= 1 * player.speed;
-                break;
-            case RIGHT:
-                if (player.x < (game.cols - player.width - 1)) player.x += 1 * player.speed;
-                break;
-            case QUIT:
-                game.running = false;
-                break;
+        if (ch != ERR) {
+            switch(ch) {
+                case UP:
+                    player.movingUp = true;
+                    player.movingDown = false;
+                    player.movingLeft = false;
+                    player.movingRight = false;
+                    break;
+                case DOWN:
+                    player.movingDown = true;
+                    player.movingUp = false;
+                    player.movingLeft = false;
+                    player.movingRight = false;
+                    break;
+                case LEFT:
+                    player.movingDown = false;
+                    player.movingUp = false;
+                    player.movingLeft = true;
+                    player.movingRight = false;
+                    break;
+                case RIGHT:
+                    player.movingDown = false;
+                    player.movingUp = false;
+                    player.movingRight = true;
+                    player.movingLeft = false;
+                    break;
+                case ' ':  // Dodaj klawisz do zatrzymania
+                    player.movingUp = player.movingDown = 
+                    player.movingLeft = player.movingRight = false;
+                    break;
+                case QUIT:
+                    game.running = false;
+                    break;
+            }
         }
-        
+        updatePlayerPosition(&game, &player);
         hunterState(hunters, &player, &game, hunterCount);
         
         usleep(16666);
@@ -74,7 +91,7 @@ int main() {
         box(game.mainWindow, 0, 0);
         wrefresh(game.mainWindow);
         mvwin(player.body, player.y, player.x);
-        
+        updateHud(&game, &player);
         drawPlayer(&player);
     }
     fclose(game.logFile);

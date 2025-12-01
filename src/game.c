@@ -1,5 +1,6 @@
 // game.c
 #include "game.h"
+#include "player.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,11 +17,23 @@ void init(struct Game* game) {
 
     getmaxyx(game->mainWindow, game->rows, game->cols);
 
-    box(game->mainWindow, 0, 0);
+    game->hudHeight = 3;
 
+    game->hudWindow = subwin(game->mainWindow, game->hudHeight, game->cols, game->rows - game->hudHeight - 1, 0);
+
+    box(game->mainWindow, 0, 0);
     nodelay(game->mainWindow, TRUE);
     noecho();
     curs_set(0);
+}
+
+void updateHud(struct Game* game, struct Player* player) {
+    for (int i = 1; i < game->cols - 1; i++) {
+        mvwaddstr(game->hudWindow, 0, i, "#");
+        mvwaddstr(game->hudWindow, game->hudHeight - 1, i, "#");
+    }
+    mvwprintw(game->hudWindow, 1, 2, "Score: %d", player->score);
+    wrefresh(game->hudWindow);
 }
 
 bool shouldSpawnHunter(struct Game* game, int seconds) {
