@@ -1,4 +1,3 @@
-// game.h
 #ifndef GAME_H
 #define GAME_H
 
@@ -15,6 +14,7 @@ struct Game {
     int cols;
     int rows;
     int hudHeight;
+    int level;
     bool running;
     time_t lastHunterSpawn;
     time_t lastStarSpawn;

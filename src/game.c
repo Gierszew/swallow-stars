@@ -1,4 +1,3 @@
-// game.c
 #include "game.h"
 #include "player.h"
 #include <stdio.h>
@@ -17,7 +16,7 @@ void init(struct Game* game) {
     }
 
     getmaxyx(game->mainWindow, game->rows, game->cols);
-
+    game->level = 1;
     game->hudHeight = 5;
 
     game->hudWindow = subwin(game->mainWindow, game->hudHeight, game->cols, game->rows - game->hudHeight - 1, 0);
@@ -33,7 +32,8 @@ void updateHud(struct Game* game, struct Player* player) {
         mvwaddstr(game->hudWindow, 0, i, "#");
         mvwaddstr(game->hudWindow, game->hudHeight - 1, i, "#");
     }
-    mvwprintw(game->hudWindow, 1, 2, "Score: %d", player->score);
+    mvwprintw(game->hudWindow, 2, 2, "Score: %d", player->score);
+    mvwprintw(game->hudWindow, 2, 40, "Level: %d", game->level);
     wrefresh(game->hudWindow);
 }
 

@@ -13,7 +13,7 @@ void hunterState(struct Hunter hunters[], struct Player* player, struct Game* ga
         h->y += h->dy * h->speed;
 
         bounceHunter(h, game);
-
+        collisionDetectHunter(h, player);
         if (!h->alive) continue;
     }
 }
@@ -22,6 +22,9 @@ void drawHunter(struct Hunter* hunter) {
 
     char txt[10];
     sprintf(txt, " %d ", hunter->bounces);
+
+    wattron(hunter->body, COLOR_PAIR(1));
+
     mvwaddstr(hunter->body, 0, 0, "***");
     mvwaddstr(hunter->body, 1, 0, "***");
     mvwaddstr(hunter->body, 2, 0, txt);
@@ -60,6 +63,12 @@ void initHunter(struct Game* game, struct Hunter* hunter) {
     hunter->bounces = 4;
     hunter->alive = true;
     hunter->body = subwin(game->mainWindow, hunter->height, hunter->width, hunter->y, hunter->x);
+
+    if (has_colors()) {
+        start_color();
+
+        init_pair(1, COLOR_BLACK, COLOR_RED);
+    }
 
     drawHunter(hunter);
 }
@@ -106,5 +115,17 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
         
     } else {
         killHunter(hunter);
+    }
+}
+
+void collisionDetectHunter(struct Hunter* hunter, struct Player* player) {
+    if (hunter->alive) {
+        if (hunter->x < player->x + player->width &&
+            hunter->x + hunter->width > player->x &&
+            hunter->y < player->y + player->height &&
+            hunter->y + hunter->height > player->y) {
+                killHunter(hunter);
+                player->score--;
+            }
     }
 }

@@ -26,4 +26,5 @@ void drawHunters(struct Hunter* hunters, int count);
 void calcDirectionToPlayer(struct Hunter* hunter, struct Player* player);
 void killHunter(struct Hunter* hunter);
 void hunterState(struct Hunter hunters[], struct Player* player, struct Game* game, int hunterCount);
+void collisionDetectHunter(struct Hunter* hunter, struct Player* player);
 #endif

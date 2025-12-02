@@ -19,6 +19,6 @@ void drawStar(struct Star* star);
 void drawStars(struct Star* star, int starCount);
 void starState(struct Star stars[], struct Player* player, struct Game* game, int starCount);
 void killStar(struct Star* star);
-void collisionDetect(struct Game* game, struct Player* player, struct Star* star);
+void collisionDetectStar(struct Game* game, struct Player* player, struct Star* star);
 
 #endif
