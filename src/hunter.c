@@ -12,8 +12,9 @@ void hunterState(struct Hunter hunters[], struct Player* player, struct Game* ga
         h->x += h->dx * h->speed;
         h->y += h->dy * h->speed;
 
-        bounceHunter(h, game);
+        bounceHunter(h, game, player);
         collisionDetectHunter(h, player);
+        upgradeHunter(game, h);
         if (!h->alive) continue;
     }
 }
@@ -60,9 +61,12 @@ void initHunter(struct Game* game, struct Hunter* hunter) {
     hunter->x = randInt(0, game->cols - 4);
     hunter->y = 4;
     hunter->speed = 0.57f;
-    hunter->bounces = 4;
+    hunter->bounces = 4 * game->mult;
     hunter->alive = true;
     hunter->body = subwin(game->mainWindow, hunter->height, hunter->width, hunter->y, hunter->x);
+
+    hunter->hunterTimer = time(NULL);
+    hunter->requiredSecondsToUpgrade = 10;
 
     if (has_colors()) {
         start_color();
@@ -81,7 +85,7 @@ void killHunter(struct Hunter* hunter) {
     hunter->alive = false;
 }
 
-void bounceHunter(struct Hunter* hunter, struct Game* game) {
+void bounceHunter(struct Hunter* hunter, struct Game* game, struct Player* player) {
     
     if (hunter->bounces > 0) {
 
@@ -90,6 +94,7 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
             hunter->x = 1;
             hunter->dx = -hunter->dx;
             hunter->bounces--;
+            calcDirectionToPlayer(hunter, player);
         }
 
         // right wall
@@ -97,6 +102,7 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
             hunter->x = game->cols - hunter->width - 1;
             hunter->dx = -hunter->dx;
             hunter->bounces--;
+            calcDirectionToPlayer(hunter, player);
         }
 
         // top wall
@@ -104,6 +110,7 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
             hunter->y = 1;
             hunter->dy = -hunter->dy;
             hunter->bounces--;
+            calcDirectionToPlayer(hunter, player);
         }
 
         // bot wall
@@ -111,6 +118,7 @@ void bounceHunter(struct Hunter* hunter, struct Game* game) {
             hunter->y = game->rows - game->hudHeight - hunter->height - 1;
             hunter->dy = -hunter->dy;
             hunter->bounces--;
+            calcDirectionToPlayer(hunter, player);
         }
         
     } else {
@@ -124,8 +132,19 @@ void collisionDetectHunter(struct Hunter* hunter, struct Player* player) {
             hunter->x + hunter->width > player->x &&
             hunter->y < player->y + player->height &&
             hunter->y + hunter->height > player->y) {
-                killHunter(hunter);
-                player->score--;
-            }
+            killHunter(hunter);
+            player->hp--;
+        }
+    }
+}
+
+void upgradeHunter(struct Game* game, struct Hunter* hunter) {
+    time_t now = time(NULL);
+    float elapsed = difftime(now, hunter->hunterTimer);
+
+    if (elapsed >= hunter->requiredSecondsToUpgrade) {
+        game->mult += 0.3f;
+        hunter->hunterTimer = now;
+        game->huntersToSpawn += 0.5f;
     }
 }

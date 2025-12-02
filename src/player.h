@@ -11,6 +11,7 @@ struct Player {
     int width;
     int height;
     int score;
+    int hp;
     bool movingUp, movingDown, movingLeft, movingRight;
 };
 

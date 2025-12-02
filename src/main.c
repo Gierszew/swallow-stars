@@ -2,6 +2,7 @@
 #include "player.h"
 #include "hunter.h"
 #include "star.h"
+#include "taxi.h"
 #include "utils.h"
 #include <unistd.h>
 #include <stdlib.h>
@@ -13,8 +14,9 @@
 #define SPEED_UP    'o'
 #define SPEED_DOWN  'p'
 #define QUIT        'q'
-#define MAX_HUNTERS 50
-#define MAX_STARS   50
+#define MAX_HUNTERS 5000
+#define MAX_STARS   5000
+#define MAX_TAXIS   5000
 
 
 int main() {
@@ -23,6 +25,7 @@ int main() {
     struct Player player;
     struct Hunter hunters[MAX_HUNTERS];
     struct Star stars[MAX_STARS];
+    struct Taxi taxis[MAX_TAXIS];
     for (int i = 0; i < MAX_HUNTERS; ++i) {
         hunters[i].alive = false;
         hunters[i].body = NULL;
@@ -33,31 +36,48 @@ int main() {
         stars[i].alive = false;
         stars[i].body = NULL;
     }
+    for (int i = 0; i < MAX_TAXIS; ++i) {
+        taxis[i].alive = false;
+        taxis[i].body = NULL;
+    }
     int hunterCount = 0;
     int starCount = 0;
+    int taxiCount = 0;
     char ch;
     init(&game);
     initPlayer(&game, &player);
     while (game.running) {
         ch = getch();
-        if (player.score <= 0)
+        if (player.hp <= 0)
             game.running = false;
         getmaxyx(game.mainWindow, game.rows, game.cols);
-        if (shouldSpawnHunter(&game, 1.0f)) {
+
+        game.currentTime = time(NULL) - game.startTime;
+        
+        if (shouldSpawnHunter(&game, 8.0f)) {
             if (hunterCount < MAX_HUNTERS) {
-                initHunter(&game, &hunters[hunterCount]);
-                hunterCount++;
+                for (int i = 0; i < game.huntersToSpawn; i++) {
+                    initHunter(&game, &hunters[hunterCount]);
+                    hunterCount++;
+                }
             }
         }
-        if (shouldSpawnStar(&game, 3.0f)) {
+        if (shouldSpawnStar(&game, 1.0f)) {
             if (starCount < MAX_STARS) {
                 initStar(&game, &stars[starCount]);
                 starCount++;
+            }
+        }
+        if (shouldSpawnTaxi(&game, 25.0f)) {
+            if (taxiCount < MAX_TAXIS) {
+                initTaxi(&game, &taxis[taxiCount]);
+                taxiCount++;
             }
             fprintf(game.logFile, "Hello world");   
         }
         drawHunters(hunters, hunterCount);
         drawStars(stars, starCount);
+        drawTaxis(taxis, taxiCount);
         werase(player.body);
         for (int i = 0; i < hunterCount; i++) {
             werase(hunters[i].body);
@@ -98,8 +118,16 @@ int main() {
             }
         }
         updatePlayerPosition(&game, &player);
+
         hunterState(hunters, &player, &game, hunterCount);
         starState(stars, &player, &game, starCount);
+        taxiState(taxis, &player, &game, taxiCount);
+
+        if (player.score >= game.requiredScore) {
+            game.level++;
+            game.requiredScore = 5 * game.level;
+            player.score = 0;
+        }
         usleep(16666);
         werase(game.mainWindow);
         box(game.mainWindow, 0, 0);

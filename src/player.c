@@ -4,7 +4,8 @@
 void initPlayer(struct Game* game, struct Player* player) {
     player->width = 5;
     player->height = 3;
-    player->score = 5;
+    player->score = 0;
+    player->hp = 5;
     player->speed = 0.8f;
     player->x = (game->cols - player->width) / 2;
     player->y = (game->rows - player->height) / 2;
