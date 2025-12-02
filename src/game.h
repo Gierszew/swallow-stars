@@ -17,10 +17,12 @@ struct Game {
     int hudHeight;
     bool running;
     time_t lastHunterSpawn;
+    time_t lastStarSpawn;
 };
 
 void init(struct Game* game);
 void updateHud(struct Game* game, struct Player* player);
-bool shouldSpawnHunter(struct Game* game, int seconds);
+bool shouldSpawnHunter(struct Game* game, float seconds);
+bool shouldSpawnStar(struct Game* game, float seconds);
 
 #endif

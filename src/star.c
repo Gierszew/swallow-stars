@@ -9,6 +9,16 @@ void drawStar(struct Star* star) {
     wrefresh(star->body);
 }
 
+void drawStars(struct Star* star, int starCount) {
+    for (int i = 0; i < starCount; i++) {
+        struct Star* s = &star[i];
+        if (!s->alive) continue;
+
+        mvwin(s->body, s->y, s->x);
+        drawStar(s);
+    }
+}
+
 void initStar(struct Game* game, struct Star* star) {
     star->width = 1;
     star->height = 1;
@@ -24,6 +34,37 @@ void starState(struct Star stars[], struct Player* player, struct Game* game, in
     for (int i = 0; i < starCount; i++) {
         struct Star* s = &stars[i];
         if (!s->alive) continue;
+        collisionDetect(game, player, s);
         s->y += 1 * s->speed;
     }
+}
+
+void collisionDetect(struct Game* game, struct Player* player, struct Star* star) {
+    if (star->x <= 1)
+        killStar(star);
+    if (star->x >= game->cols - star->width - 1)
+        killStar(star);
+    if (star->y <= 1)
+        killStar(star);
+    if (star->y >= game->rows - game->hudHeight - star->height - 1)
+        killStar(star);
+    if (star->alive) {  // Tylko jeśli gwiazda jeszcze żyje
+        if (star->x < player->x + player->width &&
+            star->x + star->width > player->x &&
+            star->y < player->y + player->height &&
+            star->y + star->height > player->y) {
+            
+            // Kolizja wykryta!
+            player->score++;  // Dodaj punkty
+            killStar(star);  // Usuń gwiazdę
+        }
+    }
+}
+
+void killStar(struct Star* star) {
+    if (star->body) {
+        delwin(star->body);
+        star->body = NULL;
+    }
+    star->alive = false;
 }

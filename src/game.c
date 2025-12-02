@@ -9,6 +9,7 @@ void init(struct Game* game) {
     game->mainWindow = initscr();
     game->running = true;
     game->lastHunterSpawn = time(NULL);
+    game->lastStarSpawn = time(NULL);
 
     if (!game->mainWindow) {
         fprintf(stderr, "Error initialising ncurses.\n");
@@ -17,7 +18,7 @@ void init(struct Game* game) {
 
     getmaxyx(game->mainWindow, game->rows, game->cols);
 
-    game->hudHeight = 3;
+    game->hudHeight = 5;
 
     game->hudWindow = subwin(game->mainWindow, game->hudHeight, game->cols, game->rows - game->hudHeight - 1, 0);
 
@@ -36,12 +37,23 @@ void updateHud(struct Game* game, struct Player* player) {
     wrefresh(game->hudWindow);
 }
 
-bool shouldSpawnHunter(struct Game* game, int seconds) {
+bool shouldSpawnHunter(struct Game* game, float seconds) {
     time_t now = time(NULL);
     double elapsed = difftime(now, game->lastHunterSpawn);
 
     if (elapsed >= seconds) {
         game->lastHunterSpawn = now;
+        return true;
+    }
+    return false;
+}
+
+bool shouldSpawnStar(struct Game* game, float seconds) {
+    time_t now = time(NULL);
+    double elapsed = difftime(now, game->lastStarSpawn);
+    
+    if (elapsed >= seconds) {
+        game->lastStarSpawn = now;
         return true;
     }
     return false;
