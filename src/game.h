@@ -7,10 +7,18 @@
 
 struct Player;
 struct Taxi;
+
+struct Ranking {
+    int score;
+    int hp;
+    int level;
+};
 struct Game {
     WINDOW* mainWindow;
     WINDOW* hudWindow;
     FILE* logFile;
+    FILE* rankingFile;
+    struct Ranking ranking;
     int cols;
     int rows;
     int hudHeight;
@@ -29,6 +37,8 @@ struct Game {
 void init(struct Game* game);
 void updateHud(struct Game* game, struct Player* player);
 void formatTime(time_t seconds, char* buffer, size_t bufferSize);
+void writeRanking(struct Game* game, struct Player* player);
+struct Ranking getRanking(struct Game* game);
 bool shouldSpawnHunter(struct Game* game, float seconds);
 bool shouldSpawnStar(struct Game* game, float seconds);
 bool shouldSpawnTaxi(struct Game* game, float seconds);

@@ -126,7 +126,6 @@ int main() {
         if (player.score >= game.requiredScore) {
             game.level++;
             game.requiredScore = 5 * game.level;
-            player.score = 0;
         }
         usleep(16666);
         werase(game.mainWindow);
@@ -137,6 +136,10 @@ int main() {
         drawPlayer(&player);
     }
     fclose(game.logFile);
+    writeRanking(&game, &player);
+    fprintf(game.rankingFile, "%d %d %d", game.ranking.hp, game.ranking.level, game.ranking.score);
+    fflush(game.rankingFile);
+    fclose(game.rankingFile);
     delwin(player.body);
     delwin(game.mainWindow);
     endwin();

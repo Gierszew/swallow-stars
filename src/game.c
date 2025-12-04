@@ -6,6 +6,7 @@
 
 void init(struct Game* game) {
     game->logFile = fopen("debug.log", "w");
+    game->rankingFile = fopen("ranking.txt", "a+");
     game->mainWindow = initscr();
     game->running = true;
     game->lastHunterSpawn = time(NULL);
@@ -29,6 +30,7 @@ void init(struct Game* game) {
 
     box(game->mainWindow, 0, 0);
     nodelay(game->mainWindow, TRUE);
+    keypad(game->mainWindow, TRUE);
     noecho();
     curs_set(0);
 }
@@ -53,6 +55,12 @@ void formatTime(time_t seconds, char* buffer, size_t bufferSize) {
     int minutes = seconds / 60;
     int secs = seconds % 60;
     snprintf(buffer, bufferSize, "%02d:%02d", minutes, secs);
+}
+
+void writeRanking(struct Game* game, struct Player* player) {
+    game->ranking.hp = player->hp;
+    game->ranking.level = game->level;
+    game->ranking.score = player->score;
 }
 
 bool shouldSpawnHunter(struct Game* game, float seconds) {
