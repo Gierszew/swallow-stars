@@ -4,7 +4,11 @@
 #include <curses.h>
 
 void drawStar(struct Star* star) {
+    wattron(star->body, COLOR_PAIR(4));
+
     mvwaddstr(star->body, 0, 0, "*");
+
+    wattroff(star->body, COLOR_PAIR(4));
 
     wrefresh(star->body);
 }
@@ -27,7 +31,6 @@ void initStar(struct Game* game, struct Star* star) {
     star->speed = 0.15f;
     star->alive = true;
     star->body = subwin(game->mainWindow, star->height, star->width, star->y, star->x);
-    drawStar(star);
 }
 
 void starState(struct Star stars[], struct Player* player, struct Game* game, int starCount) {

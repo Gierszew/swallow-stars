@@ -8,18 +8,28 @@
 
 struct Hunter {
     WINDOW* body;
+
+    char hunterTemplate;
+
     float speed;
     float x;
     float y;
     float dx;
     float dy;
+
     int width;
     int height;
     int bounces;
+    int requiredSecondsToUpgrade;
+    int type;
+    int damage;
+
     bool alive;
     bool dirCalculated;
-    time_t hunterTimer;
-    int requiredSecondsToUpgrade;
+    bool stunned;
+    
+    time_t hunterTimerToUpgrade;
+    time_t stunTimer;
 };
 
 void bounceHunter(struct Hunter* hunter, struct Game* game, struct Player* player);

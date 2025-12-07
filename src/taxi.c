@@ -1,12 +1,13 @@
 #include "taxi.h"
+#include "hunter.h"
 #include "utils.h"
 #include <curses.h>
 
-void taxiState(struct Taxi taxis[], struct Player* player, struct Game* game, int taxiCount) {
+void taxiState(struct Taxi taxis[], struct Hunter* hunters, struct Player* player, struct Game* game, int taxiCount, int hunterCount) {
     for (int i = 0; i < taxiCount; i++) {
         struct Taxi* t = &taxis[i];
         if (!t->alive) continue;
-        collisionDetectTaxi(game, player, t);
+        collisionDetectTaxi(game, player, t, hunters, hunterCount);
         t->y += 1 * t->speed;
     }
 }
@@ -19,12 +20,14 @@ void initTaxi(struct Game* game, struct Taxi* taxi) {
     taxi->speed = 0.2f;
     taxi->alive = true;
     taxi->body = subwin(game->mainWindow, taxi->height, taxi->width, taxi->y, taxi->x);
-    drawTaxi(taxi);
 }
 
 void drawTaxi(struct Taxi* taxi) {
+    wattron(taxi->body, COLOR_PAIR(2));
+
     mvwaddstr(taxi->body, 0, 0, "*");
     mvwaddstr(taxi->body, 1, 0, "*");
+    wattroff(taxi->body, COLOR_PAIR(2));
 
     wrefresh(taxi->body);
 }
@@ -39,7 +42,7 @@ void drawTaxis(struct Taxi taxis[], int taxiCount) {
     }
 }
 
-void collisionDetectTaxi(struct Game* game, struct Player* player, struct Taxi* taxi) {
+void collisionDetectTaxi(struct Game* game, struct Player* player, struct Taxi* taxi, struct Hunter* hunters, int hunterCount) {
     if (taxi->x <= 1)
         killTaxi(taxi);
     if (taxi->x >= game->cols - taxi->width - 1)
@@ -56,6 +59,11 @@ void collisionDetectTaxi(struct Game* game, struct Player* player, struct Taxi* 
             
             game->mult = 1;
             game->huntersToSpawn = 1;
+            
+            for (int i = 0; i < hunterCount; i++) {
+                if (hunters[i].alive)
+                    killHunter(&hunters[i]);
+            }
 
             killTaxi(taxi);
         }

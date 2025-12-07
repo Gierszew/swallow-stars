@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "GameConfig.h"
 #include <curses.h>
 #include <stdbool.h>
 #include <time.h>
@@ -8,25 +9,30 @@
 struct Player;
 struct Taxi;
 
-struct Ranking {
-    int score;
-    int hp;
-    int level;
-};
 struct Game {
     WINDOW* mainWindow;
     WINDOW* hudWindow;
+
+    struct GameConfig config;
+
     FILE* logFile;
-    FILE* rankingFile;
-    struct Ranking ranking;
+
+    int seed;
+    int topScoresCount;
     int cols;
     int rows;
     int hudHeight;
     int level;
     int requiredScore;
+    int speed;
+    int endTime;
+    int requiredScoreToWin;
+
     float mult;
     float huntersToSpawn;
+
     bool running;
+
     time_t lastHunterSpawn;
     time_t lastStarSpawn;
     time_t lastTaxiSpawn;
@@ -35,10 +41,10 @@ struct Game {
 };
 
 void init(struct Game* game);
-void updateHud(struct Game* game, struct Player* player);
+void updateHud(struct Game* game, struct Player* player, int starCount);
 void formatTime(time_t seconds, char* buffer, size_t bufferSize);
-void writeRanking(struct Game* game, struct Player* player);
-struct Ranking getRanking(struct Game* game);
+void endGame(struct Game* game, struct Player* player);
+
 bool shouldSpawnHunter(struct Game* game, float seconds);
 bool shouldSpawnStar(struct Game* game, float seconds);
 bool shouldSpawnTaxi(struct Game* game, float seconds);

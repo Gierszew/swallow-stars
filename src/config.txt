@@ -1,0 +1,28 @@
+# Map
+borderChar=+
+hudHeight=5
+
+# Quotas  
+initialScoreQuota=10
+scoreQuotaMultiplier=6
+starQuota=30
+playerMaxHP=5
+
+# Timers (sekundy)
+hunterSpawnInterval=6.0
+starSpawnInterval=1.00
+taxiSpawnInterval=20.0
+endTime=80
+
+# Hunters
+initialHunterCount=2
+hunterSpeed=0.65
+hunterInitialBounces=5
+hunterDamage=1
+hunterTemplate=*
+
+# Seed
+seed=random
+
+# Others
+speedBound=50
