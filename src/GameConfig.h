@@ -32,6 +32,7 @@ struct GameConfig {
 
     // Others
     int speedBound;
+    int starValue;
 };
 
 void loadConfig(struct GameConfig* config);

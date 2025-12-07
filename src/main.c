@@ -10,15 +10,21 @@ int main() {
     struct Game game;
     struct Player player;
     struct ArrayData arr;
-    if(!allocArrays(&arr)){fprintf(stderr,"Memory allocation failed!\n");return EXIT_FAILURE;}
+    if(!allocArrays(&arr)) {
+        fprintf(stderr,"Memory allocation failed!\n");
+        return EXIT_FAILURE;
+    }
     initArrays(&arr);
     
     init(&game);
     srand(game.seed);
     initPlayer(&game,&player);
-    while(game.running){
+    while(game.running) {
         char ch=getch();
-        if(player.hp<=0)game.running=false;
+        if(player.hp<=0) {
+            game.running=false;
+            showLoseScreen(&game, &player);
+        }
         getmaxyx(game.mainWindow,game.rows,game.cols);
         game.currentTime=time(NULL)-game.startTime;
         handleSpawns(&game,&arr);

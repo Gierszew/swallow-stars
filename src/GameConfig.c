@@ -54,6 +54,7 @@ static void parseSeed(struct GameConfig* c,char* v){
 static void parseOthers(struct GameConfig* c,char* k,char* v){
     if(!strcmp(k,"hudHeight"))c->hudHeight=atoi(v);
     else if(!strcmp(k,"speedBound"))c->speedBound=atoi(v);
+    else if (!strcmp(k, "starValue")) c->starValue = atoi(v);
 }
 
 static void parseMap(struct GameConfig* c, char* k, char* v) {

@@ -14,9 +14,9 @@
 #define CALL_TAXI 'e'
 
 static void spawnHunters(struct Game* g, struct ArrayData* a) {
-    if(!shouldSpawnHunter(g,g->config.hunterSpawnInterval))return;
-    for(int i=0;i<g->huntersToSpawn;i++){
-        if(a->hunterCount>=a->hunterCapacity&&!reallocHunters(a)){
+    if(!shouldSpawnHunter(g,g->config.hunterSpawnInterval)) return;
+    for(int i=0;i<g->huntersToSpawn;i++) {
+        if(a->hunterCount>=a->hunterCapacity&&!reallocHunters(a)) {
             fprintf(stderr,"Memory reallocation failed for hunters!\n");
             g->running=false;
             break;
@@ -26,8 +26,8 @@ static void spawnHunters(struct Game* g, struct ArrayData* a) {
 }
 
 static void spawnStars(struct Game* g, struct ArrayData* a) {
-    if(!shouldSpawnStar(g,g->config.starSpawnInterval))return;
-    if(a->starCount>=a->starCapacity&&!reallocStars(a)){
+    if(!shouldSpawnStar(g,g->config.starSpawnInterval)) return;
+    if(a->starCount>=a->starCapacity&&!reallocStars(a)) {
         fprintf(stderr,"Memory reallocation failed for stars!\n");
         g->running=false;
         return;
@@ -36,7 +36,7 @@ static void spawnStars(struct Game* g, struct ArrayData* a) {
 }
 
 static void spawnTaxi(struct Game* g, struct ArrayData* a) {
-    if(a->taxiCount>=a->taxiCapacity&&!reallocTaxis(a)){
+    if(a->taxiCount>=a->taxiCapacity&&!reallocTaxis(a)) {
         fprintf(stderr,"Memory reallocation failed for taxis!\n");
         g->running=false;
         return;
@@ -49,7 +49,7 @@ void handleSpawns(struct Game* game, struct ArrayData* arr) {
     spawnStars(game,arr);
 }
 
-static void setDirection(struct Player* p,bool up,bool down,bool left,bool right){
+static void setDirection(struct Player* p,bool up,bool down,bool left,bool right) {
     p->movingUp=up;
     p->movingDown=down;
     p->movingLeft=left;
@@ -58,7 +58,7 @@ static void setDirection(struct Player* p,bool up,bool down,bool left,bool right
 
 void handleInput(char ch, struct Game* g, struct Player* p, struct ArrayData* a) {
     if(ch==ERR)return;
-    switch(ch){
+    switch(ch) {
         case UP:setDirection(p,true,false,false,false);break;
         case DOWN:setDirection(p,false,true,false,false);break;
         case LEFT:setDirection(p,false,false,true,false);break;
@@ -85,7 +85,6 @@ void updateGameState(struct Game* g, struct Player* p, struct ArrayData* a) {
 
 void renderFrame(struct Game* g, struct Player* p, struct ArrayData* a) {
     eraseEntities(a,p);
-    fflush(g->logFile);
     werase(g->mainWindow);
     wrefresh(g->mainWindow);
     mvwin(p->body,p->y,p->x);

@@ -27,6 +27,7 @@ struct Game {
     int speed;
     int endTime;
     int requiredScoreToWin;
+    int** cellOccupancy;
 
     float mult;
     float huntersToSpawn;
@@ -44,6 +45,8 @@ void init(struct Game* game);
 void updateHud(struct Game* game, struct Player* player, int starCount);
 void formatTime(time_t seconds, char* buffer, size_t bufferSize);
 void endGame(struct Game* game, struct Player* player);
+void showWinScreen(struct Game* game, struct Player* player);
+void showLoseScreen(struct Game* game, struct Player* player);
 
 bool shouldSpawnHunter(struct Game* game, float seconds);
 bool shouldSpawnStar(struct Game* game, float seconds);

@@ -10,16 +10,14 @@ void hunterState(struct Hunter hunters[], struct Player* player, struct Game* ga
         if (!h->dirCalculated)
             calcDirectionToPlayer(h, player);
         
-        // Sprawdź czy hunter jest ogłuszony
         if (h->stunned) {
             time_t now = time(NULL);
             float stunElapsed = difftime(now, h->stunTimer);
-            if (stunElapsed >= 0.5f) {  // 0.5 sekundy zatrzymania
+            if (stunElapsed >= 0.5f) {
                 h->stunned = false;
             }
         }
         
-        // Ruch tylko jeśli nie jest ogłuszony
         if (!h->stunned) {
             h->x += h->dx * h->speed;
             h->y += h->dy * h->speed;
@@ -95,7 +93,7 @@ void initHunter(struct Game* game, struct Hunter* hunter) {
     hunter->x = randInt(0, game->cols - 4);
     hunter->y = hunter->height + 1;
     hunter->speed = 0.57f;
-    hunter->bounces = 4 * game->mult;
+    hunter->bounces = game->config.hunterInitialBounces * game->mult;
     hunter->alive = true;
     hunter->stunned = false;
     hunter->body = subwin(game->mainWindow, hunter->height, hunter->width, hunter->y, hunter->x);
@@ -115,42 +113,36 @@ void killHunter(struct Hunter* hunter) {
 void bounceHunter(struct Hunter* hunter, struct Game* game, struct Player* player) {
     
     if (hunter->bounces > 0) {
-        // Nie sprawdzaj odbić jeśli hunter jest już ogłuszony
         if (hunter->stunned) {
             return;
         }
         
         bool bounced = false;
 
-        // left wall
         if (hunter->x <= 1) {
             hunter->x = 1;
             hunter->dx = -hunter->dx;
             bounced = true;
         }
 
-        // right wall
         if (hunter->x >= game->cols - hunter->width - 1) {
             hunter->x = game->cols - hunter->width - 1;
             hunter->dx = -hunter->dx;
             bounced = true;
         }
 
-        // top wall
         if (hunter->y <= 1) {
             hunter->y = 1;
             hunter->dy = -hunter->dy;
             bounced = true;
         }
 
-        // bot wall
         if (hunter->y >= game->rows - game->hudHeight - hunter->height - 1) {
             hunter->y = game->rows - game->hudHeight - hunter->height - 2;
             hunter->dy = -hunter->dy;
             bounced = true;
         }
         
-        // Jeśli nastąpiło odbicie, odejmij bounce i zastosuj stun
         if (bounced) {
             hunter->bounces--;
             hunter->stunned = true;

@@ -51,15 +51,14 @@ void collisionDetectStar(struct Game* game, struct Player* player, struct Star* 
         killStar(star);
     if (star->y >= game->rows - game->hudHeight - star->height - 1)
         killStar(star);
-    if (star->alive) {  // Tylko jeśli gwiazda jeszcze żyje
+    if (star->alive) {
         if (star->x < player->x + player->width &&
             star->x + star->width > player->x &&
             star->y < player->y + player->height &&
             star->y + star->height > player->y) {
             
-            // Kolizja wykryta!
-            player->score++;  // Dodaj punkty
-            killStar(star);  // Usuń gwiazdę
+            player->score += game->config.starValue;
+            killStar(star);
         }
     }
 }
